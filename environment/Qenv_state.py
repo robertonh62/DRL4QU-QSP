@@ -80,8 +80,6 @@ class Qenv_state_gym(Env, Circuit):
         for gate in self.single_qgates:
             for qubit in self.qubit_range:
                 self.explicit_actions.append((gate, qubit, adjoint==True))
-                #if adjoint == True:
-                #    self.explicit_actions.append((gate, qubit, True))
 
         for gate in self.double_qgates:
             for qubits in self.qubit_connectivity:
@@ -95,8 +93,6 @@ class Qenv_state_gym(Env, Circuit):
             self.observation_space = spaces.Box(low=-1.0, high=1.0, shape=(2**(self.N+1),), dtype=np.float32)
         elif obs_type == 'Concat':
             self.observation_space = spaces.Box(low=-1.0, high=1.0, shape=(2**(self.N+2),), dtype=np.float32)
-        #elif obs_type == 'Dict':
-        #    self.observation_space = spaces.Dict({'achieved_goal': obs_box, 'desired_goal': obs_box}, seed=42)
 
         # DEFINE REWARD
         self.fidelity_threshold = fidelity_threshold
@@ -125,13 +121,6 @@ class Qenv_state_gym(Env, Circuit):
 
         if self.obs_type == 'Concat':
             obs = np.concatenate((obs, self.desired_goal_np.copy()), axis=0)
-        #elif self.obs_type == 'Dict':
-        #    obs = OrderedDict(
-        #        [
-        #            ("achieved_goal", obs.copy()),
-        #            ("desired_goal", self.desired_goal_np.copy()),
-        #        ]
-        #    )
         return obs
     
     def reset(self, seed=None):
@@ -168,17 +157,10 @@ class Qenv_state_gym(Env, Circuit):
         gate_symbol, qubit_idx, adjoint = self.explicit_actions[action]
         qgate = self.get_gate(gate_symbol=gate_symbol, qubit=qubit_idx, adjoint=adjoint)
         self.apply_gate(gate=qgate, gate_symbol=gate_symbol, qubits=qubit_idx, adjoint=adjoint)
-        #self.Unitary = qgate @ self.Unitary
-        #self.state = qgate @ self.state
-        #self.history.loc[len(self.history)] = {'Gate':gate_symbol, 'Qubits':qubit_idx, 'Theta':0, 'Adjoint':adjoint}
-        #self.counter += 1
 
         observation = self._get_obs()
         # Reward calculation
-        #if self.obs_type == 'Box':
         reward = float(self.compute_reward(self.state, self.desired_goal, None).item())
-        #elif self.obs_type == 'Dict':
-        #    reward = float(self.compute_reward(observation["achieved_goal"], observation["desired_goal"], None).item())
         self.score += reward
         # Done calculation
         done = self.fidelity > self.fidelity_threshold
@@ -195,31 +177,13 @@ class Qenv_state_gym(Env, Circuit):
         return observation, reward, done, truncated, info
 
     def compute_reward(self, achieved_goal, desired_goal, _info):
-        #if self.obs_type == 'Dict':
-        #    achieved_goal = self.np2tensor(achieved_goal)
-        #    desired_goal = self.np2tensor(desired_goal)
-
         fidelity_ = self.get_fidelity(achieved_goal, desired_goal)
         if self.sparse_reward == True:
             reward = -(fidelity_ < self.fidelity_threshold).type(pt.float32)
         else:
-            #if fidelity_ > self.fidelity_threshold:
-            #    reward = np.array((self.max_steps - self.counter) + 1, dtype=np.float32)
-            #else:
-            #reward = pt.log(fidelity_ + 1e-20).cpu().numpy()
             reward = (fidelity_ - self.fidelity).cpu().numpy()
         self.fidelity = fidelity_
         return reward
-        
-    #def np2tensor(self, nparray):
-    #    if nparray.ndim == 1:
-    #        half = int(nparray.shape[0]/2)
-    #        tensor = pt.tensor((nparray[:half] + 1j * nparray[half:]).reshape(half, 1), dtype=pt.complex64, device=self.device)
-    #    else:
-    #        # batch cases
-    #        half = int(nparray.shape[1]/2)
-    #        tensor = pt.tensor((nparray[:,:half] + 1j * nparray[:,half:]).reshape(nparray.shape[0],half, 1), dtype=pt.complex64, device=self.device)
-    #    return tensor
 
     def get_fidelity(self, achieved_goal, desired_goal):
         # fidelity: |<state|goal>|^2 

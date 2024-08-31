@@ -162,13 +162,6 @@ class Qenv_ising_state_gym(Env, Circuit):
             self.num_starts = num_starts
             if self.num_starts != -1:
                 self.start_states = self.generate_starts(self.num_starts)
-
-        #self.num_starts = num_starts if isinstance(self.starts, str) else self.starts.shape[1]
-        #if self.num_starts != -1:
-        #    if isinstance(self.starts, pt.Tensor):
-        #        self.start_states = self.starts
-        #    else:
-        #        self.start_states = self.generate_starts(self.num_starts)
         
         # Reward related stuff
         self.goal = goal
@@ -214,13 +207,6 @@ class Qenv_ising_state_gym(Env, Circuit):
             self.start_state = self.start_states[sample]
             if self.starts == 'ground states':
                 self.ground_states_params_ = self.ground_states_params_picked[sample]
-
-        # Sample new goal from Set of Goals
-        #if self.num_starts == -1:
-        #    self.start_state = self.generate_starts(num_states=1)
-        #else:
-        #    sample = np.random.randint(self.num_starts)
-        #    self.start_state = self.start_states[sample]
 
         self.reset_circuit(state=self.start_state)
         self.fidelity = self.get_fidelity(self.state, self.goal)

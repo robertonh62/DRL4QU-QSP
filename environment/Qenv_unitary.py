@@ -77,8 +77,6 @@ class Qenv_unitary_gym(Env, Circuit):
         for gate in self.single_qgates:
             for qubit in self.qubit_range:
                 self.explicit_actions.append((gate, qubit, adjoint==True))
-                #if adjoint == True:
-                #    self.explicit_actions.append((gate, qubit, True))
 
         for gate in self.double_qgates:
             for qubits in self.qubit_connectivity:
@@ -131,10 +129,6 @@ class Qenv_unitary_gym(Env, Circuit):
         gate_symbol, qubit_idx, adjoint = self.explicit_actions[action]
         qgate = self.get_gate(gate_symbol=gate_symbol, qubit=qubit_idx, adjoint=adjoint)
         self.apply_gate(gate=qgate, gate_symbol=gate_symbol, qubits=qubit_idx, adjoint=adjoint)
-        #self.Unitary = qgate @ self.Unitary
-        #self.state = qgate @ self.state
-        #self.history.loc[len(self.history)] = {'Gate':gate_symbol, 'Qubits':qubit_idx, 'Theta':0, 'Adjoint':adjoint}
-        #self.counter += 1
 
         observation = self._get_obs()
         # Reward calculation
